@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>iced comic</title>
     <script src="https://cdn.jsdelivr.net/npm/blurhash@2.0.5/dist/blurhash.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/blurhash-wasm@1.0.1/dist/blurhash-browser.min.js"></script>
     <style>
         body {
             font-family: monospace;
@@ -51,7 +50,6 @@
             max-height: 100%;
             max-width: 95%;
             object-fit: contain;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
             opacity: 0;
             transition: opacity 0.5s ease;
         }
@@ -67,7 +65,6 @@
             transform: translate(-50%, -50%);
             width: 60%;
             height: 80%;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
         }
         
         .loading-indicator {
@@ -226,6 +223,7 @@
         document.addEventListener('DOMContentLoaded', function() {
             const pages = document.querySelectorAll('.page');
             let currentPageIndex = 0;
+            let imagesLoaded = 0;
             
             const prevBtn = document.getElementById('prev-btn');
             const nextBtn = document.getElementById('next-btn');
@@ -324,28 +322,21 @@
                 renderBlurHash(page);
             });
             
-            // Sequential image loading starting with cover
-            function loadImagesSequentially() {
-                let currentIndex = 0;
+            // Load an image given its page element
+            function loadImage(page) {
+                const img = page.querySelector('.page-image');
+                const loadingIndicator = page.querySelector('.loading-indicator');
                 
-                function loadNextImage() {
-                    if (currentIndex >= pages.length) return;
-                    
-                    const page = pages[currentIndex];
-                    const img = page.querySelector('.page-image');
-                    const loadingIndicator = page.querySelector('.loading-indicator');
-                    
-                    if (!img || !img.dataset.src) {
-                        currentIndex++;
-                        loadNextImage();
-                        return;
-                    }
-                    
-                    // Show loading indicator
-                    loadingIndicator.classList.add('visible');
-                    
-                    // Load the image
+                if (!img || !img.dataset.src || img.src === img.dataset.src) {
+                    return Promise.resolve(); // Already loaded or no image to load
+                }
+                
+                // Show loading indicator
+                loadingIndicator.classList.add('visible');
+                
+                return new Promise((resolve, reject) => {
                     const newImg = new Image();
+                    
                     newImg.onload = function() {
                         // Hide loading indicator
                         loadingIndicator.classList.remove('visible');
@@ -353,12 +344,9 @@
                         // Show the image
                         img.src = img.dataset.src;
                         img.classList.add('loaded');
+                        imagesLoaded++;
                         
-                        // Proceed to next image
-                        currentIndex++;
-                        
-                        // Small delay between loads to prevent network congestion
-                        setTimeout(loadNextImage, 200);
+                        resolve();
                     };
                     
                     newImg.onerror = function() {
@@ -366,21 +354,31 @@
                         loadingIndicator.textContent = 'Failed to load';
                         setTimeout(() => {
                             loadingIndicator.classList.remove('visible');
-                            currentIndex++;
-                            loadNextImage();
                         }, 1000);
+                        reject();
                     };
                     
                     // Start loading
                     newImg.src = img.dataset.src;
-                }
+                });
+            }
+            
+            // Start loading all images, one after the other
+            async function loadAllImages() {
+                // First, load the cover page
+                await loadImage(pages[0]);
                 
-                // Start the loading sequence
-                loadNextImage();
+                // Then load all remaining pages in order
+                for (let i = 1; i < pages.length; i++) {
+                    loadImage(pages[i]).catch(() => {
+                        console.error(`Failed to load image ${i}`);
+                    });
+                    // Don't await here - we want them all to start loading
+                }
             }
             
             // Start loading images after a small delay to allow blurhash rendering first
-            setTimeout(loadImagesSequentially, 100);
+            setTimeout(loadAllImages, 100);
             
             // Initial scroll position
             scrollToPage(0);
