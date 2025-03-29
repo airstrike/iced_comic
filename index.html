@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>iced comic</title>
-    <script src="blurhash.js"></script>
     <style>
         body {
             font-family: monospace;
@@ -15,7 +14,7 @@
             overflow-x: hidden;
             scroll-behavior: smooth;
         }
-        
+
         .title {
             position: fixed;
             top: 15px;
@@ -27,14 +26,14 @@
             z-index: 100;
             mix-blend-mode: difference;
         }
-        
+
         .container {
             display: flex;
             flex-direction: column;
             align-items: center;
             width: 100%;
         }
-        
+
         .page {
             height: calc(100vh - 40px);
             width: 100%;
@@ -45,7 +44,7 @@
             scroll-margin: 20px;
             position: relative;
         }
-        
+
         .page-image {
             max-height: 100%;
             max-width: 95%;
@@ -53,37 +52,28 @@
             opacity: 0;
             transition: opacity 0.5s ease;
         }
-        
+
         .page-image.loaded {
             opacity: 1;
         }
-        
-        .page-placeholder {
+
+        .placeholder {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 60%;
-            height: 80%;
+            width: 450px;
+            height: 650px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: rgba(255, 255, 255, 0.3);
+            font-family: monospace;
+            font-size: 16px;
+            letter-spacing: 1px;
         }
-        
-        .loading-indicator {
-            position: absolute;
-            bottom: 10px;
-            right: 10px;
-            color: white;
-            background-color: rgba(0, 0, 0, 0.7);
-            padding: 5px 10px;
-            border-radius: 4px;
-            font-size: 12px;
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-        
-        .loading-indicator.visible {
-            opacity: 1;
-        }
-        
+
+
         .iced-link {
             position: fixed;
             bottom: 15px;
@@ -94,12 +84,12 @@
             text-decoration: none;
             z-index: 100;
         }
-        
+
         .iced-link:hover {
             color: #00aaff;
             text-decoration: underline;
         }
-        
+
         .navigation {
             position: fixed;
             bottom: 20px;
@@ -108,7 +98,7 @@
             gap: 10px;
             z-index: 100;
         }
-        
+
         .nav-button {
             background-color: rgba(0, 0, 0, 0.6);
             color: rgba(255, 255, 255, 0.7);
@@ -120,7 +110,7 @@
             font-size: 14px;
             transition: all 0.2s;
         }
-        
+
         .nav-button:hover {
             background-color: rgba(0, 170, 255, 0.2);
             color: white;
@@ -130,90 +120,74 @@
 <body>
     <div class="title">iced comic</div>
     <a href="https://github.com/iced-rs/iced" class="iced-link" target="_blank">github.com/iced-rs/iced</a>
-    
+
     <div class="container">
-        <div id="page0" class="page" data-hash="LGF5?xD%~qxu_4%MRPWBt8j[M{fk">
-            <canvas class="page-placeholder"></canvas>
+        <div id="page0" class="page">
+            <div class="placeholder">Loading...</div>
             <img class="page-image" data-src="cover.png" alt="Cover">
-            <div class="loading-indicator">Loading...</div>
         </div>
-        <div id="page1" class="page" data-hash="LCF6+4IA?wkC4:M{IUoLDiWBxujs">
-            <canvas class="page-placeholder"></canvas>
+        <div id="page1" class="page">
+            <div class="placeholder">Loading...</div>
             <img class="page-image" data-src="page01.png" alt="Page 1">
-            <div class="loading-indicator">Loading...</div>
         </div>
-        <div id="page2" class="page" data-hash="LOFP2nD%_NxuRPRjRPWBM{flWBj[">
-            <canvas class="page-placeholder"></canvas>
+        <div id="page2" class="page">
+            <div class="placeholder">Loading...</div>
             <img class="page-image" data-src="page02.png" alt="Page 2">
-            <div class="loading-indicator">Loading...</div>
         </div>
-        <div id="page3" class="page" data-hash="L8FYwS~pRPIU9u-;IARjIAt7xZWV">
-            <canvas class="page-placeholder"></canvas>
+        <div id="page3" class="page">
+            <div class="placeholder">Loading...</div>
             <img class="page-image" data-src="page03a.png" alt="Page 3a">
-            <div class="loading-indicator">Loading...</div>
         </div>
-        <div id="page4" class="page" data-hash="LCFY^hD$?bRj58WVWVoL00WBtRbI">
-            <canvas class="page-placeholder"></canvas>
+        <div id="page4" class="page">
+            <div class="placeholder">Loading...</div>
             <img class="page-image" data-src="page03b.png" alt="Page 3b">
-            <div class="loading-indicator">Loading...</div>
         </div>
-        <div id="page5" class="page" data-hash="LGF5a}00xu%M_NxuRjoLayoMxtWB">
-            <canvas class="page-placeholder"></canvas>
+        <div id="page5" class="page">
+            <div class="placeholder">Loading...</div>
             <img class="page-image" data-src="page04a.png" alt="Page 4a">
-            <div class="loading-indicator">Loading...</div>
         </div>
-        <div id="page6" class="page" data-hash="L8G8C~xaogWV9Fxtt7j]00ofRjWV">
-            <canvas class="page-placeholder"></canvas>
+        <div id="page6" class="page">
+            <div class="placeholder">Loading...</div>
             <img class="page-image" data-src="page04b.png" alt="Page 4b">
-            <div class="loading-indicator">Loading...</div>
         </div>
-        <div id="page7" class="page" data-hash="LGG8Mf%MxuRj~qxuRjbHfkxuM{of">
-            <canvas class="page-placeholder"></canvas>
+        <div id="page7" class="page">
+            <div class="placeholder">Loading...</div>
             <img class="page-image" data-src="page05a.png" alt="Page 5a">
-            <div class="loading-indicator">Loading...</div>
         </div>
-        <div id="page8" class="page" data-hash="LIF5,*00IUxu_NxtRjj]M{j?M{WB">
-            <canvas class="page-placeholder"></canvas>
+        <div id="page8" class="page">
+            <div class="placeholder">Loading...</div>
             <img class="page-image" data-src="page05b.png" alt="Page 5b">
-            <div class="loading-indicator">Loading...</div>
         </div>
-        <div id="page9" class="page" data-hash="LFF5RcDi9Exu~qIVIVWBtRj]j]fk">
-            <canvas class="page-placeholder"></canvas>
+        <div id="page9" class="page">
+            <div class="placeholder">Loading...</div>
             <img class="page-image" data-src="page06a.png" alt="Page 6a">
-            <div class="loading-indicator">Loading...</div>
         </div>
-        <div id="page10" class="page" data-hash="LFF5=|D%_NkC.Txut7WBRjWVRjj[">
-            <canvas class="page-placeholder"></canvas>
+        <div id="page10" class="page">
+            <div class="placeholder">Loading...</div>
             <img class="page-image" data-src="page06b.png" alt="Page 6b">
-            <div class="loading-indicator">Loading...</div>
         </div>
-        <div id="page11" class="page" data-hash="L9G8PNxa~qWB-;j[ayj[4nfkWBWB">
-            <canvas class="page-placeholder"></canvas>
+        <div id="page11" class="page">
+            <div class="placeholder">Loading...</div>
             <img class="page-image" data-src="page06c.png" alt="Page 6c">
-            <div class="loading-indicator">Loading...</div>
         </div>
-        <div id="page12" class="page" data-hash="L8FrTO00?bxu-;WBaej[4nxtaybI">
-            <canvas class="page-placeholder"></canvas>
+        <div id="page12" class="page">
+            <div class="placeholder">Loading...</div>
             <img class="page-image" data-src="page07a.png" alt="Page 7a">
-            <div class="loading-indicator">Loading...</div>
         </div>
-        <div id="page13" class="page" data-hash="LBFr?HDi_3%M?bxuRjWB9Gj[ofWV">
-            <canvas class="page-placeholder"></canvas>
+        <div id="page13" class="page">
+            <div class="placeholder">Loading...</div>
             <img class="page-image" data-src="page07b.png" alt="Page 7b">
-            <div class="loading-indicator">Loading...</div>
         </div>
-        <div id="page14" class="page" data-hash="LKG8%s%MM{M{~qj[Rjj]IUofWBay">
-            <canvas class="page-placeholder"></canvas>
+        <div id="page14" class="page">
+            <div class="placeholder">Loading...</div>
             <img class="page-image" data-src="page07c.png" alt="Page 7c">
-            <div class="loading-indicator">Loading...</div>
         </div>
-        <div id="page15" class="page" data-hash="LBFrQF00_NRj?wRjaxWBxuRjayt7">
-            <canvas class="page-placeholder"></canvas>
+        <div id="page15" class="page">
+            <div class="placeholder">Loading...</div>
             <img class="page-image" data-src="page08.png" alt="Page 8">
-            <div class="loading-indicator">Loading...</div>
         </div>
     </div>
-    
+
     <div class="navigation">
         <button id="prev-btn" class="nav-button">←</button>
         <button id="next-btn" class="nav-button">→</button>
@@ -223,36 +197,29 @@
         document.addEventListener('DOMContentLoaded', function() {
             const pages = document.querySelectorAll('.page');
             let currentPageIndex = 0;
-            
+
             const prevBtn = document.getElementById('prev-btn');
             const nextBtn = document.getElementById('next-btn');
-            
-            // Simple logging function with timestamps
-            function log(message) {
-                const timestamp = new Date().toISOString().substr(11, 8);
-                console.log(`[${timestamp}] ${message}`);
-            }
-            
-            log('Comic viewer initialized');
-            
+
+            // Initialize comic viewer
+
             // Function to scroll to a specific page
             function scrollToPage(index) {
                 if (index >= 0 && index < pages.length) {
                     currentPageIndex = index;
-                    log(`Navigating to page ${index}`);
                     pages[index].scrollIntoView({ behavior: 'smooth' });
                 }
             }
-            
+
             // Set up navigation
             prevBtn.addEventListener('click', () => {
                 scrollToPage(currentPageIndex - 1);
             });
-            
+
             nextBtn.addEventListener('click', () => {
                 scrollToPage(currentPageIndex + 1);
             });
-            
+
             // Keyboard navigation
             document.addEventListener('keydown', (e) => {
                 if (e.key === 'ArrowLeft' || e.key === 'a') {
@@ -261,123 +228,65 @@
                     scrollToPage(currentPageIndex + 1);
                 }
             });
-            
+
             // Find current visible page on scroll
             function findVisiblePage() {
                 const viewportHeight = window.innerHeight;
                 const viewportCenter = window.scrollY + viewportHeight / 2;
-                
+
                 let closestPage = 0;
                 let closestDistance = Infinity;
-                
+
                 pages.forEach((page, index) => {
                     const rect = page.getBoundingClientRect();
                     const pageCenter = window.scrollY + rect.top + rect.height / 2;
                     const distance = Math.abs(viewportCenter - pageCenter);
-                    
+
                     if (distance < closestDistance) {
                         closestDistance = distance;
                         closestPage = index;
                     }
                 });
-                
+
                 if (currentPageIndex !== closestPage) {
-                    log(`Visible page changed to ${closestPage}`);
                     currentPageIndex = closestPage;
                 }
             }
-            
+
             window.addEventListener('scroll', () => {
                 findVisiblePage();
             });
-            
-            // BlurHash rendering
-            function renderBlurHash(page) {
-                // Check if blurhash library is loaded
-                if (typeof blurhash === 'undefined') {
-                    log('WARNING: blurhash library not loaded yet, skipping placeholder rendering');
-                    return;
-                }
-                
-                const canvas = page.querySelector('.page-placeholder');
-                const hash = page.dataset.hash;
-                const pageId = page.id;
-                
-                if (!hash || !canvas) {
-                    log(`Cannot render blurhash for ${pageId}: missing hash or canvas`);
-                    return;
-                }
-                
-                log(`Rendering blurhash for ${pageId}`);
-                
-                // Get approximate dimensions for the placeholder
-                const aspectRatio = 1.3; // Typical comic aspect ratio
-                const maxHeight = window.innerHeight * 0.8;
-                const maxWidth = window.innerWidth * 0.6;
-                
-                let width, height;
-                if (maxWidth / aspectRatio <= maxHeight) {
-                    width = maxWidth;
-                    height = maxWidth / aspectRatio;
-                } else {
-                    height = maxHeight;
-                    width = height * aspectRatio;
-                }
-                
-                canvas.width = width;
-                canvas.height = height;
-                
-                // Render blurhash
-                try {
-                    const pixels = blurhash.decode(hash, width, height);
-                    const ctx = canvas.getContext('2d');
-                    const imageData = ctx.createImageData(width, height);
-                    const uint8Array = new Uint8ClampedArray(pixels);
-                    imageData.data.set(uint8Array);
-                    ctx.putImageData(imageData, 0, 0);
-                    log(`Blurhash rendering successful for ${pageId}`);
-                } catch (error) {
-                    log(`ERROR: Failed to decode blurhash for ${pageId}: ${error.message}`);
-                    console.error(error);
-                }
-            }
-            
+
             // Simple image loader with queue
             const ImageLoader = {
                 queue: [],
                 loading: false,
                 processed: 0,
                 total: 0,
-                
+
                 add: function(page) {
                     const pageSrc = page.querySelector('.page-image').dataset.src;
-                    log(`QUEUE: Adding ${pageSrc} to loading queue (position: ${this.queue.length})`);
                     this.queue.push(page);
                     this.total++;
-                    
+
                     if (!this.loading) {
-                        log('QUEUE: Starting queue processing');
                         this.processNext();
                     }
                 },
-                
+
                 processNext: function() {
                     if (this.queue.length === 0) {
                         this.loading = false;
-                        log(`QUEUE: All images loaded (${this.processed}/${this.total})`);
                         return;
                     }
-                    
+
                     this.loading = true;
                     const page = this.queue.shift();
                     const pageSrc = page.querySelector('.page-image').dataset.src;
-                    
-                    log(`LOADING: Starting to load ${pageSrc} (${this.processed+1}/${this.total})`);
-                    
+
                     this.loadImage(page)
                         .then(() => {
                             this.processed++;
-                            log(`LOADING: Successfully loaded ${pageSrc} (${this.processed}/${this.total})`);
                             // Continue with next image regardless of success/failure
                             this.processNext();
                         })
@@ -387,109 +296,50 @@
                             this.processNext();
                         });
                 },
-                
+
                 loadImage: function(page) {
                     const img = page.querySelector('.page-image');
-                    const loadingIndicator = page.querySelector('.loading-indicator');
-                    
+                    const placeholder = page.querySelector('.placeholder');
+
                     if (!img || !img.dataset.src || img.src === img.dataset.src) {
-                        log(`SKIP: Image already loaded or missing: ${img ? img.dataset.src : 'unknown'}`);
                         return Promise.resolve(); // Already loaded or no image to load
                     }
-                    
-                    // Show loading indicator
-                    loadingIndicator.classList.add('visible');
-                    log(`LOADING: Showing indicator for ${img.dataset.src}`);
-                    
+
                     return new Promise((resolve, reject) => {
                         const newImg = new Image();
                         const startTime = Date.now();
-                        
+
                         newImg.onload = function() {
                             const loadTime = Date.now() - startTime;
-                            // Hide loading indicator
-                            loadingIndicator.classList.remove('visible');
-                            
-                            // Show the image
+
+                            // Show the image and hide placeholder
                             img.src = img.dataset.src;
                             img.classList.add('loaded');
-                            
-                            log(`SUCCESS: Loaded ${img.dataset.src} in ${loadTime}ms`);
+                            if (placeholder) placeholder.style.display = 'none';
+
                             resolve();
                         };
-                        
+
                         newImg.onerror = function() {
                             // Handle loading error
-                            loadingIndicator.textContent = 'Failed to load';
-                            setTimeout(() => {
-                                loadingIndicator.classList.remove('visible');
-                            }, 1000);
+                            if (placeholder) placeholder.textContent = 'Error loading image';
                             log(`ERROR: Failed to load image ${img.dataset.src}`);
                             reject(`Failed to load ${img.dataset.src}`);
                         };
-                        
+
                         // Start loading
-                        log(`LOADING: Initiating actual fetch of ${img.dataset.src}`);
                         newImg.src = img.dataset.src;
                     });
                 }
             };
-            
-            // Function to check if blurhash library is loaded
-            function checkBlurhashLoaded() {
-                return typeof blurhash !== 'undefined';
-            }
-            
-            // Wait for blurhash to be available before rendering
-            function waitForBlurhash(callback, maxAttempts = 10) {
-                let attempts = 0;
-                
-                function check() {
-                    attempts++;
-                    if (checkBlurhashLoaded()) {
-                        log('Blurhash library loaded successfully');
-                        callback();
-                    } else if (attempts < maxAttempts) {
-                        log(`Waiting for blurhash library (attempt ${attempts}/${maxAttempts})...`);
-                        setTimeout(check, 200);
-                    } else {
-                        log('ERROR: Failed to load blurhash library after multiple attempts, proceeding without placeholders');
-                        callback();
-                    }
-                }
-                
-                check();
-            }
-            
-            // Initialize everything once blurhash is loaded
-            waitForBlurhash(() => {
-                // Render blurhash placeholders if available
-                if (checkBlurhashLoaded()) {
-                    log('Rendering blurhash placeholders for all pages');
-                    pages.forEach(page => {
-                        renderBlurHash(page);
-                    });
-                }
-                
-                // Start loading images
-                log('Starting image loading sequence');
-                pages.forEach(page => {
-                    ImageLoader.add(page);
-                });
-                
-                // Initial scroll position
-                scrollToPage(0);
+
+            // Start loading images
+            pages.forEach(page => {
+                ImageLoader.add(page);
             });
-            
-            // Handle window resize
-            window.addEventListener('resize', () => {
-                if (checkBlurhashLoaded()) {
-                    log('Window resized, re-rendering blurhash placeholders');
-                    pages.forEach(page => {
-                        renderBlurHash(page);
-                    });
-                }
-            });
+
+            // Initial scroll position
+            scrollToPage(0);
         });
     </script>
 </body>
