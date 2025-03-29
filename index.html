@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>iced comic</title>
+    <script src="https://cdn.jsdelivr.net/npm/blurhash@2.0.5/dist/blurhash.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/blurhash-wasm@1.0.1/dist/blurhash-browser.min.js"></script>
     <style>
         body {
             font-family: monospace;
@@ -14,7 +16,7 @@
             overflow-x: hidden;
             scroll-behavior: smooth;
         }
-
+        
         .title {
             position: fixed;
             top: 15px;
@@ -26,14 +28,14 @@
             z-index: 100;
             mix-blend-mode: difference;
         }
-
+        
         .container {
             display: flex;
             flex-direction: column;
             align-items: center;
             width: 100%;
         }
-
+        
         .page {
             height: calc(100vh - 40px);
             width: 100%;
@@ -42,15 +44,49 @@
             align-items: center;
             padding: 20px 0;
             scroll-margin: 20px;
+            position: relative;
         }
-
-        .page img {
+        
+        .page-image {
             max-height: 100%;
             max-width: 95%;
             object-fit: contain;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+            opacity: 0;
+            transition: opacity 0.5s ease;
         }
-
+        
+        .page-image.loaded {
+            opacity: 1;
+        }
+        
+        .page-placeholder {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 60%;
+            height: 80%;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+        }
+        
+        .loading-indicator {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            color: white;
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .loading-indicator.visible {
+            opacity: 1;
+        }
+        
         .iced-link {
             position: fixed;
             bottom: 15px;
@@ -61,20 +97,21 @@
             text-decoration: none;
             z-index: 100;
         }
-
+        
         .iced-link:hover {
             color: #00aaff;
             text-decoration: underline;
         }
-
+        
         .navigation {
             position: fixed;
             bottom: 20px;
             right: 20px;
             display: flex;
             gap: 10px;
+            z-index: 100;
         }
-
+        
         .nav-button {
             background-color: rgba(0, 0, 0, 0.6);
             color: rgba(255, 255, 255, 0.7);
@@ -86,7 +123,7 @@
             font-size: 14px;
             transition: all 0.2s;
         }
-
+        
         .nav-button:hover {
             background-color: rgba(0, 170, 255, 0.2);
             color: white;
@@ -96,58 +133,90 @@
 <body>
     <div class="title">iced comic</div>
     <a href="https://github.com/iced-rs/iced" class="iced-link" target="_blank">github.com/iced-rs/iced</a>
-
+    
     <div class="container">
-        <div id="cover" class="page">
-            <img src="cover.png" alt="Cover" loading="eager">
+        <div id="page0" class="page" data-hash="LGF5?xD%~qxu_4%MRPWBt8j[M{fk">
+            <canvas class="page-placeholder"></canvas>
+            <img class="page-image" data-src="cover.png" alt="Cover">
+            <div class="loading-indicator">Loading...</div>
         </div>
-        <div id="page1" class="page">
-            <img src="page01.png" alt="Page 1" loading="lazy">
+        <div id="page1" class="page" data-hash="LCF6+4IA?wkC4:M{IUoLDiWBxujs">
+            <canvas class="page-placeholder"></canvas>
+            <img class="page-image" data-src="page01.png" alt="Page 1">
+            <div class="loading-indicator">Loading...</div>
         </div>
-        <div id="page2" class="page">
-            <img src="page02.png" alt="Page 2" loading="lazy">
+        <div id="page2" class="page" data-hash="LOFP2nD%_NxuRPRjRPWBM{flWBj[">
+            <canvas class="page-placeholder"></canvas>
+            <img class="page-image" data-src="page02.png" alt="Page 2">
+            <div class="loading-indicator">Loading...</div>
         </div>
-        <div id="page3" class="page">
-            <img src="page03a.png" alt="Page 3a" loading="lazy">
+        <div id="page3" class="page" data-hash="L8FYwS~pRPIU9u-;IARjIAt7xZWV">
+            <canvas class="page-placeholder"></canvas>
+            <img class="page-image" data-src="page03a.png" alt="Page 3a">
+            <div class="loading-indicator">Loading...</div>
         </div>
-        <div id="page4" class="page">
-            <img src="page03b.png" alt="Page 3b" loading="lazy">
+        <div id="page4" class="page" data-hash="LCFY^hD$?bRj58WVWVoL00WBtRbI">
+            <canvas class="page-placeholder"></canvas>
+            <img class="page-image" data-src="page03b.png" alt="Page 3b">
+            <div class="loading-indicator">Loading...</div>
         </div>
-        <div id="page5" class="page">
-            <img src="page04a.png" alt="Page 4a" loading="lazy">
+        <div id="page5" class="page" data-hash="LGF5a}00xu%M_NxuRjoLayoMxtWB">
+            <canvas class="page-placeholder"></canvas>
+            <img class="page-image" data-src="page04a.png" alt="Page 4a">
+            <div class="loading-indicator">Loading...</div>
         </div>
-        <div id="page6" class="page">
-            <img src="page04b.png" alt="Page 4b" loading="lazy">
+        <div id="page6" class="page" data-hash="L8G8C~xaogWV9Fxtt7j]00ofRjWV">
+            <canvas class="page-placeholder"></canvas>
+            <img class="page-image" data-src="page04b.png" alt="Page 4b">
+            <div class="loading-indicator">Loading...</div>
         </div>
-        <div id="page7" class="page">
-            <img src="page05a.png" alt="Page 5a" loading="lazy">
+        <div id="page7" class="page" data-hash="LGG8Mf%MxuRj~qxuRjbHfkxuM{of">
+            <canvas class="page-placeholder"></canvas>
+            <img class="page-image" data-src="page05a.png" alt="Page 5a">
+            <div class="loading-indicator">Loading...</div>
         </div>
-        <div id="page8" class="page">
-            <img src="page05b.png" alt="Page 5b" loading="lazy">
+        <div id="page8" class="page" data-hash="LIF5,*00IUxu_NxtRjj]M{j?M{WB">
+            <canvas class="page-placeholder"></canvas>
+            <img class="page-image" data-src="page05b.png" alt="Page 5b">
+            <div class="loading-indicator">Loading...</div>
         </div>
-        <div id="page9" class="page">
-            <img src="page06a.png" alt="Page 6a" loading="lazy">
+        <div id="page9" class="page" data-hash="LFF5RcDi9Exu~qIVIVWBtRj]j]fk">
+            <canvas class="page-placeholder"></canvas>
+            <img class="page-image" data-src="page06a.png" alt="Page 6a">
+            <div class="loading-indicator">Loading...</div>
         </div>
-        <div id="page10" class="page">
-            <img src="page06b.png" alt="Page 6b" loading="lazy">
+        <div id="page10" class="page" data-hash="LFF5=|D%_NkC.Txut7WBRjWVRjj[">
+            <canvas class="page-placeholder"></canvas>
+            <img class="page-image" data-src="page06b.png" alt="Page 6b">
+            <div class="loading-indicator">Loading...</div>
         </div>
-        <div id="page11" class="page">
-            <img src="page06c.png" alt="Page 6c" loading="lazy">
+        <div id="page11" class="page" data-hash="L9G8PNxa~qWB-;j[ayj[4nfkWBWB">
+            <canvas class="page-placeholder"></canvas>
+            <img class="page-image" data-src="page06c.png" alt="Page 6c">
+            <div class="loading-indicator">Loading...</div>
         </div>
-        <div id="page12" class="page">
-            <img src="page07a.png" alt="Page 7a" loading="lazy">
+        <div id="page12" class="page" data-hash="L8FrTO00?bxu-;WBaej[4nxtaybI">
+            <canvas class="page-placeholder"></canvas>
+            <img class="page-image" data-src="page07a.png" alt="Page 7a">
+            <div class="loading-indicator">Loading...</div>
         </div>
-        <div id="page13" class="page">
-            <img src="page07b.png" alt="Page 7b" loading="lazy">
+        <div id="page13" class="page" data-hash="LBFr?HDi_3%M?bxuRjWB9Gj[ofWV">
+            <canvas class="page-placeholder"></canvas>
+            <img class="page-image" data-src="page07b.png" alt="Page 7b">
+            <div class="loading-indicator">Loading...</div>
         </div>
-        <div id="page14" class="page">
-            <img src="page07c.png" alt="Page 7c" loading="lazy">
+        <div id="page14" class="page" data-hash="LKG8%s%MM{M{~qj[Rjj]IUofWBay">
+            <canvas class="page-placeholder"></canvas>
+            <img class="page-image" data-src="page07c.png" alt="Page 7c">
+            <div class="loading-indicator">Loading...</div>
         </div>
-        <div id="page15" class="page">
-            <img src="page08.png" alt="Page 8" loading="lazy">
+        <div id="page15" class="page" data-hash="LBFrQF00_NRj?wRjaxWBxuRjayt7">
+            <canvas class="page-placeholder"></canvas>
+            <img class="page-image" data-src="page08.png" alt="Page 8">
+            <div class="loading-indicator">Loading...</div>
         </div>
     </div>
-
+    
     <div class="navigation">
         <button id="prev-btn" class="nav-button">←</button>
         <button id="next-btn" class="nav-button">→</button>
@@ -155,53 +224,29 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Prefetch all images after first load
-            const images = [
-                "cover.png",
-                "page01.png",
-                "page02.png",
-                "page03a.png",
-                "page03b.png",
-                "page04a.png",
-                "page04b.png",
-                "page05a.png",
-                "page05b.png",
-                "page06a.png",
-                "page06b.png",
-                "page06c.png",
-                "page07a.png",
-                "page07b.png",
-                "page07c.png",
-                "page08.png"
-            ];
-
-            // Prefetch all images
-            images.forEach(src => {
-                const img = new Image();
-                img.src = src;
-            });
-
             const pages = document.querySelectorAll('.page');
             let currentPageIndex = 0;
-
+            
             const prevBtn = document.getElementById('prev-btn');
             const nextBtn = document.getElementById('next-btn');
-
+            
+            // Function to scroll to a specific page
             function scrollToPage(index) {
                 if (index >= 0 && index < pages.length) {
                     currentPageIndex = index;
                     pages[index].scrollIntoView({ behavior: 'smooth' });
                 }
             }
-
+            
+            // Set up navigation
             prevBtn.addEventListener('click', () => {
                 scrollToPage(currentPageIndex - 1);
             });
-
+            
             nextBtn.addEventListener('click', () => {
                 scrollToPage(currentPageIndex + 1);
             });
-
+            
             // Keyboard navigation
             document.addEventListener('keydown', (e) => {
                 if (e.key === 'ArrowLeft' || e.key === 'a') {
@@ -210,35 +255,142 @@
                     scrollToPage(currentPageIndex + 1);
                 }
             });
-
+            
             // Find current visible page on scroll
             function findVisiblePage() {
                 const viewportHeight = window.innerHeight;
                 const viewportCenter = window.scrollY + viewportHeight / 2;
-
+                
                 let closestPage = 0;
                 let closestDistance = Infinity;
-
+                
                 pages.forEach((page, index) => {
                     const rect = page.getBoundingClientRect();
                     const pageCenter = window.scrollY + rect.top + rect.height / 2;
                     const distance = Math.abs(viewportCenter - pageCenter);
-
+                    
                     if (distance < closestDistance) {
                         closestDistance = distance;
                         closestPage = index;
                     }
                 });
-
+                
                 currentPageIndex = closestPage;
             }
-
+            
             window.addEventListener('scroll', () => {
                 findVisiblePage();
             });
-
+            
+            // BlurHash rendering
+            function renderBlurHash(page) {
+                const canvas = page.querySelector('.page-placeholder');
+                const hash = page.dataset.hash;
+                
+                if (!hash || !canvas) return;
+                
+                // Get approximate dimensions for the placeholder
+                const aspectRatio = 1.3; // Typical comic aspect ratio
+                const maxHeight = window.innerHeight * 0.8;
+                const maxWidth = window.innerWidth * 0.6;
+                
+                let width, height;
+                if (maxWidth / aspectRatio <= maxHeight) {
+                    width = maxWidth;
+                    height = maxWidth / aspectRatio;
+                } else {
+                    height = maxHeight;
+                    width = height * aspectRatio;
+                }
+                
+                canvas.width = width;
+                canvas.height = height;
+                
+                // Render blurhash
+                try {
+                    const pixels = blurhash.decode(hash, width, height);
+                    const ctx = canvas.getContext('2d');
+                    const imageData = ctx.createImageData(width, height);
+                    const uint8Array = new Uint8ClampedArray(pixels);
+                    imageData.data.set(uint8Array);
+                    ctx.putImageData(imageData, 0, 0);
+                } catch (error) {
+                    console.error('Failed to decode blurhash:', error);
+                }
+            }
+            
+            // Render all blurhash placeholders
+            pages.forEach(page => {
+                renderBlurHash(page);
+            });
+            
+            // Sequential image loading starting with cover
+            function loadImagesSequentially() {
+                let currentIndex = 0;
+                
+                function loadNextImage() {
+                    if (currentIndex >= pages.length) return;
+                    
+                    const page = pages[currentIndex];
+                    const img = page.querySelector('.page-image');
+                    const loadingIndicator = page.querySelector('.loading-indicator');
+                    
+                    if (!img || !img.dataset.src) {
+                        currentIndex++;
+                        loadNextImage();
+                        return;
+                    }
+                    
+                    // Show loading indicator
+                    loadingIndicator.classList.add('visible');
+                    
+                    // Load the image
+                    const newImg = new Image();
+                    newImg.onload = function() {
+                        // Hide loading indicator
+                        loadingIndicator.classList.remove('visible');
+                        
+                        // Show the image
+                        img.src = img.dataset.src;
+                        img.classList.add('loaded');
+                        
+                        // Proceed to next image
+                        currentIndex++;
+                        
+                        // Small delay between loads to prevent network congestion
+                        setTimeout(loadNextImage, 200);
+                    };
+                    
+                    newImg.onerror = function() {
+                        // Handle loading error
+                        loadingIndicator.textContent = 'Failed to load';
+                        setTimeout(() => {
+                            loadingIndicator.classList.remove('visible');
+                            currentIndex++;
+                            loadNextImage();
+                        }, 1000);
+                    };
+                    
+                    // Start loading
+                    newImg.src = img.dataset.src;
+                }
+                
+                // Start the loading sequence
+                loadNextImage();
+            }
+            
+            // Start loading images after a small delay to allow blurhash rendering first
+            setTimeout(loadImagesSequentially, 100);
+            
             // Initial scroll position
             scrollToPage(0);
+            
+            // Handle window resize
+            window.addEventListener('resize', () => {
+                pages.forEach(page => {
+                    renderBlurHash(page);
+                });
+            });
         });
     </script>
 </body>
