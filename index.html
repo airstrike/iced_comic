@@ -223,7 +223,6 @@
         document.addEventListener('DOMContentLoaded', function() {
             const pages = document.querySelectorAll('.page');
             let currentPageIndex = 0;
-            let imagesLoaded = 0;
             
             const prevBtn = document.getElementById('prev-btn');
             const nextBtn = document.getElementById('next-btn');
@@ -322,63 +321,90 @@
                 renderBlurHash(page);
             });
             
-            // Load an image given its page element
-            function loadImage(page) {
-                const img = page.querySelector('.page-image');
-                const loadingIndicator = page.querySelector('.loading-indicator');
+            // Simple image loader with queue
+            const ImageLoader = {
+                queue: [],
+                loading: false,
                 
-                if (!img || !img.dataset.src || img.src === img.dataset.src) {
-                    return Promise.resolve(); // Already loaded or no image to load
-                }
+                add: function(page) {
+                    this.queue.push(page);
+                    if (!this.loading) {
+                        this.processNext();
+                    }
+                },
                 
-                // Show loading indicator
-                loadingIndicator.classList.add('visible');
-                
-                return new Promise((resolve, reject) => {
-                    const newImg = new Image();
+                processNext: function() {
+                    if (this.queue.length === 0) {
+                        this.loading = false;
+                        console.log('All images loaded');
+                        return;
+                    }
                     
-                    newImg.onload = function() {
-                        // Hide loading indicator
-                        loadingIndicator.classList.remove('visible');
-                        
-                        // Show the image
-                        img.src = img.dataset.src;
-                        img.classList.add('loaded');
-                        imagesLoaded++;
-                        
-                        resolve();
-                    };
+                    this.loading = true;
+                    const page = this.queue.shift();
+                    this.loadImage(page)
+                        .then(() => {
+                            // Continue with next image regardless of success/failure
+                            this.processNext();
+                        })
+                        .catch(() => {
+                            // Continue with next image even if there was an error
+                            this.processNext();
+                        });
+                },
+                
+                loadImage: function(page) {
+                    const img = page.querySelector('.page-image');
+                    const loadingIndicator = page.querySelector('.loading-indicator');
                     
-                    newImg.onerror = function() {
-                        // Handle loading error
-                        loadingIndicator.textContent = 'Failed to load';
-                        setTimeout(() => {
+                    if (!img || !img.dataset.src || img.src === img.dataset.src) {
+                        return Promise.resolve(); // Already loaded or no image to load
+                    }
+                    
+                    // Show loading indicator
+                    loadingIndicator.classList.add('visible');
+                    
+                    return new Promise((resolve, reject) => {
+                        const newImg = new Image();
+                        
+                        newImg.onload = function() {
+                            // Hide loading indicator
                             loadingIndicator.classList.remove('visible');
-                        }, 1000);
-                        reject();
-                    };
-                    
-                    // Start loading
-                    newImg.src = img.dataset.src;
+                            
+                            // Show the image
+                            img.src = img.dataset.src;
+                            img.classList.add('loaded');
+                            
+                            console.log(`Loaded: ${img.dataset.src}`);
+                            resolve();
+                        };
+                        
+                        newImg.onerror = function() {
+                            // Handle loading error
+                            loadingIndicator.textContent = 'Failed to load';
+                            setTimeout(() => {
+                                loadingIndicator.classList.remove('visible');
+                            }, 1000);
+                            console.error(`Failed to load: ${img.dataset.src}`);
+                            reject();
+                        };
+                        
+                        // Start loading
+                        newImg.src = img.dataset.src;
+                    });
+                }
+            };
+            
+            // Start image loading
+            function startImageLoading() {
+                // Add all pages to the queue in order
+                pages.forEach(page => {
+                    ImageLoader.add(page);
                 });
             }
             
-            // Start loading all images, one after the other
-            async function loadAllImages() {
-                // First, load the cover page
-                await loadImage(pages[0]);
-                
-                // Then load all remaining pages in order
-                for (let i = 1; i < pages.length; i++) {
-                    loadImage(pages[i]).catch(() => {
-                        console.error(`Failed to load image ${i}`);
-                    });
-                    // Don't await here - we want them all to start loading
-                }
-            }
-            
             // Start loading images after a small delay to allow blurhash rendering first
-            setTimeout(loadAllImages, 100);
+            setTimeout(startImageLoading, 100);
             
             // Initial scroll position
             scrollToPage(0);
