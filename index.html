@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>iced comic</title>
-    <script src="https://cdn.jsdelivr.net/npm/blurhash@2.0.5/dist/blurhash.min.js"></script>
+    <script src="blurhash.js"></script>
     <style>
         body {
             font-family: monospace;
@@ -227,10 +227,19 @@
             const prevBtn = document.getElementById('prev-btn');
             const nextBtn = document.getElementById('next-btn');
             
+            // Simple logging function with timestamps
+            function log(message) {
+                const timestamp = new Date().toISOString().substr(11, 8);
+                console.log(`[${timestamp}] ${message}`);
+            }
+            
+            log('Comic viewer initialized');
+            
             // Function to scroll to a specific page
             function scrollToPage(index) {
                 if (index >= 0 && index < pages.length) {
                     currentPageIndex = index;
+                    log(`Navigating to page ${index}`);
                     pages[index].scrollIntoView({ behavior: 'smooth' });
                 }
             }
@@ -272,7 +281,10 @@
                     }
                 });
                 
-                currentPageIndex = closestPage;
+                if (currentPageIndex !== closestPage) {
+                    log(`Visible page changed to ${closestPage}`);
+                    currentPageIndex = closestPage;
+                }
             }
             
             window.addEventListener('scroll', () => {
@@ -281,10 +293,22 @@
             
             // BlurHash rendering
             function renderBlurHash(page) {
+                // Check if blurhash library is loaded
+                if (typeof blurhash === 'undefined') {
+                    log('WARNING: blurhash library not loaded yet, skipping placeholder rendering');
+                    return;
+                }
+                
                 const canvas = page.querySelector('.page-placeholder');
                 const hash = page.dataset.hash;
+                const pageId = page.id;
                 
-                if (!hash || !canvas) return;
+                if (!hash || !canvas) {
+                    log(`Cannot render blurhash for ${pageId}: missing hash or canvas`);
+                    return;
+                }
+                
+                log(`Rendering blurhash for ${pageId}`);
                 
                 // Get approximate dimensions for the placeholder
                 const aspectRatio = 1.3; // Typical comic aspect ratio
@@ -311,24 +335,28 @@
                     const uint8Array = new Uint8ClampedArray(pixels);
                     imageData.data.set(uint8Array);
                     ctx.putImageData(imageData, 0, 0);
+                    log(`Blurhash rendering successful for ${pageId}`);
                 } catch (error) {
-                    console.error('Failed to decode blurhash:', error);
+                    log(`ERROR: Failed to decode blurhash for ${pageId}: ${error.message}`);
+                    console.error(error);
                 }
             }
-            
-            // Render all blurhash placeholders
-            pages.forEach(page => {
-                renderBlurHash(page);
-            });
             
             // Simple image loader with queue
             const ImageLoader = {
                 queue: [],
                 loading: false,
+                processed: 0,
+                total: 0,
                 
                 add: function(page) {
+                    const pageSrc = page.querySelector('.page-image').dataset.src;
+                    log(`QUEUE: Adding ${pageSrc} to loading queue (position: ${this.queue.length})`);
                     this.queue.push(page);
+                    this.total++;
+                    
                     if (!this.loading) {
+                        log('QUEUE: Starting queue processing');
                         this.processNext();
                     }
                 },
@@ -336,18 +364,25 @@
                 processNext: function() {
                     if (this.queue.length === 0) {
                         this.loading = false;
-                        console.log('All images loaded');
+                        log(`QUEUE: All images loaded (${this.processed}/${this.total})`);
                         return;
                     }
                     
                     this.loading = true;
                     const page = this.queue.shift();
+                    const pageSrc = page.querySelector('.page-image').dataset.src;
+                    
+                    log(`LOADING: Starting to load ${pageSrc} (${this.processed+1}/${this.total})`);
+                    
                     this.loadImage(page)
                         .then(() => {
+                            this.processed++;
+                            log(`LOADING: Successfully loaded ${pageSrc} (${this.processed}/${this.total})`);
                             // Continue with next image regardless of success/failure
                             this.processNext();
                         })
-                        .catch(() => {
+                        .catch((error) => {
+                            log(`ERROR: Failed to load ${pageSrc}: ${error}`);
                             // Continue with next image even if there was an error
                             this.processNext();
                         });
@@ -358,16 +393,20 @@
                     const loadingIndicator = page.querySelector('.loading-indicator');
                     
                     if (!img || !img.dataset.src || img.src === img.dataset.src) {
+                        log(`SKIP: Image already loaded or missing: ${img ? img.dataset.src : 'unknown'}`);
                         return Promise.resolve(); // Already loaded or no image to load
                     }
                     
                     // Show loading indicator
                     loadingIndicator.classList.add('visible');
+                    log(`LOADING: Showing indicator for ${img.dataset.src}`);
                     
                     return new Promise((resolve, reject) => {
                         const newImg = new Image();
+                        const startTime = Date.now();
                         
                         newImg.onload = function() {
+                            const loadTime = Date.now() - startTime;
                             // Hide loading indicator
                             loadingIndicator.classList.remove('visible');
                             
@@ -375,7 +414,7 @@
                             img.src = img.dataset.src;
                             img.classList.add('loaded');
                             
-                            console.log(`Loaded: ${img.dataset.src}`);
+                            log(`SUCCESS: Loaded ${img.dataset.src} in ${loadTime}ms`);
                             resolve();
                         };
                         
@@ -385,35 +424,71 @@
                             setTimeout(() => {
                                 loadingIndicator.classList.remove('visible');
                             }, 1000);
-                            console.error(`Failed to load: ${img.dataset.src}`);
-                            reject();
+                            log(`ERROR: Failed to load image ${img.dataset.src}`);
+                            reject(`Failed to load ${img.dataset.src}`);
                         };
                         
                         // Start loading
+                        log(`LOADING: Initiating actual fetch of ${img.dataset.src}`);
                         newImg.src = img.dataset.src;
                     });
                 }
             };
             
-            // Start image loading
-            function startImageLoading() {
-                // Add all pages to the queue in order
+            // Function to check if blurhash library is loaded
+            function checkBlurhashLoaded() {
+                return typeof blurhash !== 'undefined';
+            }
+            
+            // Wait for blurhash to be available before rendering
+            function waitForBlurhash(callback, maxAttempts = 10) {
+                let attempts = 0;
+                
+                function check() {
+                    attempts++;
+                    if (checkBlurhashLoaded()) {
+                        log('Blurhash library loaded successfully');
+                        callback();
+                    } else if (attempts < maxAttempts) {
+                        log(`Waiting for blurhash library (attempt ${attempts}/${maxAttempts})...`);
+                        setTimeout(check, 200);
+                    } else {
+                        log('ERROR: Failed to load blurhash library after multiple attempts, proceeding without placeholders');
+                        callback();
+                    }
+                }
+                
+                check();
+            }
+            
+            // Initialize everything once blurhash is loaded
+            waitForBlurhash(() => {
+                // Render blurhash placeholders if available
+                if (checkBlurhashLoaded()) {
+                    log('Rendering blurhash placeholders for all pages');
+                    pages.forEach(page => {
+                        renderBlurHash(page);
+                    });
+                }
+                
+                // Start loading images
+                log('Starting image loading sequence');
                 pages.forEach(page => {
                     ImageLoader.add(page);
                 });
-            }
-            
-            // Start loading images after a small delay to allow blurhash rendering first
-            setTimeout(startImageLoading, 100);
-            
-            // Initial scroll position
-            scrollToPage(0);
+                
+                // Initial scroll position
+                scrollToPage(0);
+            });
             
             // Handle window resize
             window.addEventListener('resize', () => {
-                pages.forEach(page => {
-                    renderBlurHash(page);
-                });
+                if (checkBlurhashLoaded()) {
+                    log('Window resized, re-rendering blurhash placeholders');
+                    pages.forEach(page => {
+                        renderBlurHash(page);
+                    });
+                }
             });
         });
     </script>
