@@ -200,6 +200,7 @@
 
             const prevBtn = document.getElementById('prev-btn');
             const nextBtn = document.getElementById('next-btn');
+            const icedLink = document.querySelector('.iced-link');
 
             // Initialize comic viewer
 
@@ -218,6 +219,23 @@
 
             nextBtn.addEventListener('click', () => {
                 scrollToPage(currentPageIndex + 1);
+            });
+
+            // Add document-wide click handler for page navigation
+            document.addEventListener('click', (e) => {
+                // Don't navigate if clicking on navigation buttons or link
+                if (e.target === prevBtn || e.target === nextBtn || 
+                    e.target === icedLink || icedLink.contains(e.target) ||
+                    e.target.closest('.navigation')) {
+                    return;
+                }
+                
+                // Navigate based on shift key
+                if (e.shiftKey) {
+                    scrollToPage(currentPageIndex - 1);
+                } else {
+                    scrollToPage(currentPageIndex + 1);
+                }
             });
 
             // Keyboard navigation
